@@ -336,6 +336,7 @@
 
 !local pointers:
  character(len=StrKIND),pointer:: microp_scheme
+ real(kind=RKIND), dimension(:,:), pointer :: prw_vcd
 
 !local variables and arrays:
  integer:: istep
@@ -388,6 +389,7 @@
        call mpas_timer_start('mp_thompson')
        istep = 1
        do while (istep .le. n_microp)
+       call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
        call mp_gt_driver( &
                   th        = th_p        , qv         = qv_p         , qc         = qc_p         , &
                   qr        = qr_p        , qi         = qi_p         , qs         = qs_p         , &
@@ -399,7 +401,7 @@
                   sr        = sr_p        , rainprod   = rainprod_p   , evapprod   = evapprod_p   , &
                   re_cloud  = recloud_p   , re_ice     = reice_p      , re_snow    = resnow_p     , &
                   has_reqc  = has_reqc    , has_reqi   = has_reqi     , has_reqs   = has_reqs     , &
-                  ntc       = ntc_p       , muc        = muc_p                                    , &
+                  ntc       = ntc_p       , muc        = muc_p        , prw_vcd = prw_vcd         , &
                   ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde           , &
                   ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme           , &
                   its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte             &
@@ -412,6 +414,7 @@
        call mpas_timer_start('mp_thompson_aerosols')
        istep = 1
        do while (istep .le. n_microp)
+       call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
        call mp_gt_driver( &
                   th        = th_p        , qv         = qv_p         , qc         = qc_p         , &
                   qr        = qr_p        , qi         = qi_p         , qs         = qs_p         , &
@@ -425,7 +428,7 @@
                   has_reqc  = has_reqc    , has_reqi   = has_reqi     , has_reqs   = has_reqs     , &
                   nc        = nc_p        , nifa       = nifa_p       , nwfa       = nwfa_p       , &
                   nifa2d    = nifa2d_p    , nwfa2d     = nwfa2d_p     , ntc        = ntc_p        , &
-                  muc       = muc_p       ,                                                         &
+                  muc       = muc_p       , prw_vcd = prw_vcd,                                     &
                   ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde           , &
                   ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme           , &
                   its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte             &

@@ -4,6 +4,9 @@
 
 #include "Registry_template.xml"
 
+<!-- process rates diagnostics -->
+#include "Registry_microphysics.xml"
+
 <!-- isobaric diagnostics -->
 #include "Registry_isobaric.xml"
 

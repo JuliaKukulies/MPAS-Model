@@ -1005,6 +1005,7 @@
                               SNOWNC, SNOWNCV,                        &
                               GRAUPELNC, GRAUPELNCV, SR,              &
                               rainprod, evapprod,                     &
+                              prw_vcd,                                &
                               refl_10cm, diagflag, do_radar_ref,      &
                               re_cloud, re_ice, re_snow,              &
                               has_reqc, has_reqi, has_reqs,           &
@@ -1036,7 +1037,9 @@
       REAL, DIMENSION(ims:ime, jms:jme), OPTIONAL, INTENT(INOUT)::      &
                           SNOWNC, SNOWNCV, GRAUPELNC, GRAUPELNCV
       REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(INOUT):: &
-                          rainprod,evapprod
+      rainprod,evapprod
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::       &
+                          prw_vcd
 #if defined(mpas)
       REAL, DIMENSION(ims:ime, jms:jme), INTENT(IN):: &
                           ntc,muc
@@ -1056,6 +1059,7 @@
                           t1d, p1d, w1d, dz1d, rho, dBZ
       REAL, DIMENSION(kts:kte):: re_qc1d, re_qi1d, re_qs1d
       REAL, DIMENSION(kts:kte):: rainprod1d, evapprod1d
+      REAL, DIMENSION(kts:kte):: prw_vcd1d 
       REAL, DIMENSION(its:ite, jts:jte):: pcp_ra, pcp_sn, pcp_gr, pcp_ic
       REAL:: dt, pptrain, pptsnow, pptgraul, pptice
       REAL:: qc_max, qr_max, qs_max, qi_max, qg_max, ni_max, nr_max
@@ -1184,7 +1188,7 @@
          call mp_thompson(qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d,     &
                       nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dz1d,  &
                       pptrain, pptsnow, pptgraul, pptice,               &
-                      rainprod1d, evapprod1d,                           &
+                      rainprod1d, evapprod1d, prw_vcd1d,                &
                       kts, kte, dt, i, j)
 
          pcp_ra(i,j) = pptrain
@@ -1230,6 +1234,7 @@
             ni(i,k,j) = ni1d(k)
             nr(i,k,j) = nr1d(k)
             th(i,k,j) = t1d(k)/pii(i,k,j)
+            prw_vcd(i,k,j) = prw_vcd1d(k)
 #if defined(mpas)
             rainprod(i,k,j) = rainprod1d(k)
             evapprod(i,k,j) = evapprod1d(k)
@@ -1400,7 +1405,7 @@
       subroutine mp_thompson (qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d,   &
                           nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dzq, &
                           pptrain, pptsnow, pptgraul, pptice,             &
-                          rainprod, evapprod,                             &
+                          rainprod, evapprod, prw_vcd,                    &
                           kts, kte, dt, ii, jj)
 
       implicit none
@@ -1414,13 +1419,13 @@
       REAL, INTENT(INOUT):: pptrain, pptsnow, pptgraul, pptice
       REAL, INTENT(IN):: dt
       REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
-                          rainprod, evapprod
+      rainprod, evapprod
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
+                          prw_vcd
 
 !..Local variables
       REAL, DIMENSION(kts:kte):: tten, qvten, qcten, qiten, &
            qrten, qsten, qgten, niten, nrten, ncten, nwfaten, nifaten
-
-      DOUBLE PRECISION, DIMENSION(kts:kte):: prw_vcd
 
       DOUBLE PRECISION, DIMENSION(kts:kte):: pnc_wcd, pnc_wau, pnc_rcw, &
            pnc_scw, pnc_gcw

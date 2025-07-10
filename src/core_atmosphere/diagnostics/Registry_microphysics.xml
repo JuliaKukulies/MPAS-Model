@@ -1,0 +1,34 @@
+<!-- ************************************* -->
+<!-- Adding microphysical process rates such as condensation to diagnostics  -->
+<!-- Created by Julia Kukulies, July 2025  -->
+<!-- ************************************* -->
+
+<var_struct name="diag" time_levs="1">
+    <!-- Vertically integrated condensation rate -->
+    <var name="condensation_rate_vint" 
+         type="real" 
+         dimensions="nCells Time" 
+         units="kg m^-2 s^-1"
+         description="Vertical integral of instaneous condensation rate"/>
+    
+    <var name="condensation_rate_vint_acc"
+	 type="real"
+	 dimensions="nCells Time" 
+	 units="kg m^-2" 
+	 description="Vertical integral of accumulated condensation rate"/>
+
+
+
+
+    <var name="condensation_rate"
+         type="real"
+         dimensions="nVertLevels nCells Time"
+         units="kg kg^-1 s^-1"
+         description="Instantaneous condensation rate at model levels"/>
+
+    <var name="condensation_rate_acc"
+         type="real"
+         dimensions="nVertLevels nCells Time"
+         units="kg kg^-1"
+         description="Accumulated condensation rate at model levels"/>
+</var_struct>
