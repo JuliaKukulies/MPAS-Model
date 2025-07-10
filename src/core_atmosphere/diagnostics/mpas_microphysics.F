@@ -188,13 +188,6 @@ subroutine mpas_microphysics_update()
     if (associated(condensation_rate_vint_acc)) condensation_rate_vint_acc(iCell) = &
          condensation_rate_vint_acc(iCell) + vert_int_inst
   end do
-
-      ! Log a sample dp from iCell = 1, k = nVertLevels
-      p_top = pressure(nVertLevels, 1)
-      p_bot = pressure(nVertLevels - 1, 1)
-      dp = p_bot - p_top
-      write(msg, '(A, F10.3)') 'INFO: Sample dp = ', dp
-      call mpas_log_write(trim(msg))
       
 end subroutine mpas_microphysics_update
 
@@ -202,12 +195,13 @@ end subroutine mpas_microphysics_update
 subroutine mpas_microphysics_compute()
   integer :: iCell, k
   real(kind=RKIND) :: p_top, p_bot, dp, layer_mass
-      real(kind=RKIND) :: vert_int_inst
+  real(kind=RKIND) :: vert_int_inst
       
-    character(len=256) :: message
-    real(kind=RKIND) :: min_cr, max_cr
-    real(kind=RKIND) :: min_vint, max_vint
-
+  character(len=256) :: message
+  real(kind=RKIND) :: min_cr, max_cr
+  real(kind=RKIND) :: min_vint, max_vint
+  real(kind=RKIND) :: prw_val
+     
   if (.not. arrays_associated) return
 
   do iCell = 1, nCells
@@ -228,22 +222,6 @@ subroutine mpas_microphysics_compute()
     ! Store instantaneous vertical integral diagnostic
     if (associated(condensation_rate_vint)) condensation_rate_vint(iCell) = vert_int_inst
       end do
-
-  ! Log min/max of condensation_rate (instantaneous)
-  if (associated(condensation_rate)) then
-    min_cr = minval(condensation_rate)
-    max_cr = maxval(condensation_rate)
-    write(message, '(A,F10.4,A,F10.4)') 'condensation_rate min = ', min_cr, ', max = ', max_cr
-    call mpas_log_write(trim(message))
-  end if
-
-  ! Log min/max of condensation_rate_vint (vertical integral)
-  if (associated(condensation_rate_vint)) then
-    min_vint = minval(condensation_rate_vint)
-    max_vint = maxval(condensation_rate_vint)
-    write(message, '(A,F10.4,A,F10.4)') 'condensation_rate_vint min = ', min_vint, ', max = ', max_vint
-    call mpas_log_write(trim(message))
-  end if
       
 end subroutine mpas_microphysics_compute
 
