@@ -346,7 +346,7 @@
  integer:: istep
 
 !CCPP-compliant flags:
- prw_vcdharacter(len=StrKIND):: errmsg
+ character(len=StrKIND):: errmsg
  integer:: errflg
 
 !-----------------------------------------------------------------------------------------------------------------
