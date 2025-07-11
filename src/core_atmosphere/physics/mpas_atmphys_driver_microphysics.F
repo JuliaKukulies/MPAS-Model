@@ -338,6 +338,17 @@
  character(len=StrKIND),pointer:: microp_scheme
  real(kind=RKIND), dimension(:,:), pointer :: prw_vcd
 
+ ! Microphysical process rates - added by Julia Kukulies, 2025 
+ real(kind=RKIND), dimension(:,:), pointer :: &
+ prs_sde, prs_ide, prg_gde, pri_inu,&
+ pri_iha, pri_ide,  &
+ prv_rev, prr_wau, prr_rcw, &
+ prw_imi, prr_gml, prr_rcs, prr_rcg
+ real(kind=RKIND), dimension(:,:), pointer :: &
+ prs_sci, prs_ihm, prs_iau, pri_rci, prg_ihm, &
+ prr_rci, pri_wfz, pri_rfz, & 
+ prg_rfz, prs_scw, prg_scw, prg_gcw, prg_rcg  
+     
 !local variables and arrays:
  integer:: istep
 
@@ -389,7 +400,34 @@
        call mpas_timer_start('mp_thompson')
        istep = 1
        do while (istep .le. n_microp)
-       call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
+          call mpas_pool_get_array(diag_physics, 'prs_sde', prs_sde)
+          call mpas_pool_get_array(diag_physics, 'prs_ide', prs_ide)
+          call mpas_pool_get_array(diag_physics, 'prg_gde', prg_gde)
+          call mpas_pool_get_array(diag_physics, 'pri_inu', pri_inu)
+          call mpas_pool_get_array(diag_physics, 'pri_iha', pri_iha)
+          call mpas_pool_get_array(diag_physics, 'pri_ide', pri_ide)
+          call mpas_pool_get_array(diag_physics, 'prv_rev', prv_rev)
+          call mpas_pool_get_array(diag_physics, 'prr_wau', prr_wau)
+          call mpas_pool_get_array(diag_physics, 'prr_rcw', prr_rcw)
+          call mpas_pool_get_array(diag_physics, 'prw_imi', prw_imi)
+          call mpas_pool_get_array(diag_physics, 'prr_gml', prr_gml)
+          call mpas_pool_get_array(diag_physics, 'prr_rcs', prr_rcs)
+          call mpas_pool_get_array(diag_physics, 'prr_rcg', prr_rcg)
+          call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
+          call mpas_pool_get_array(diag_physics, 'prs_sci', prs_sci)
+          call mpas_pool_get_array(diag_physics, 'prs_ihm', prs_ihm)
+          call mpas_pool_get_array(diag_physics, 'prs_iau', prs_iau)
+          call mpas_pool_get_array(diag_physics, 'pri_rci', pri_rci)
+          call mpas_pool_get_array(diag_physics, 'prg_ihm', prg_ihm)
+          call mpas_pool_get_array(diag_physics, 'prr_rci', prr_rci)
+          call mpas_pool_get_array(diag_physics, 'pri_wfz', pri_wfz)
+          call mpas_pool_get_array(diag_physics, 'pri_rfz', pri_rfz)
+          call mpas_pool_get_array(diag_physics, 'prg_rfz', prg_rfz)
+          call mpas_pool_get_array(diag_physics, 'prs_scw', prs_scw)
+          call mpas_pool_get_array(diag_physics, 'prg_scw', prg_scw)
+          call mpas_pool_get_array(diag_physics, 'prg_gcw', prg_gcw)
+          call mpas_pool_get_array(diag_physics, 'prg_rcg', prg_rcg)
+
        call mp_gt_driver( &
                   th        = th_p        , qv         = qv_p         , qc         = qc_p         , &
                   qr        = qr_p        , qi         = qi_p         , qs         = qs_p         , &
@@ -402,6 +440,13 @@
                   re_cloud  = recloud_p   , re_ice     = reice_p      , re_snow    = resnow_p     , &
                   has_reqc  = has_reqc    , has_reqi   = has_reqi     , has_reqs   = has_reqs     , &
                   ntc       = ntc_p       , muc        = muc_p        , prw_vcd = prw_vcd         , &
+                  prs_sde = prs_sde, prs_ide = prs_ide, prg_gde = prg_gde , pri_inu = pri_inu ,&
+                  pri_iha = pri_iha , pri_ide = pri_ide,  &
+                  prv_rev = prv_rev , prr_wau = prr_wau , prr_rcw = prr_rcw, &
+                  prw_imi = prw_imi , prr_gml = prr_gml , prr_rcs = prr_rcs , prr_rcg= prr_rcg, &
+                  prs_sci = prs_sci , prs_ihm = prs_ihm , prs_iau = prs_iau , pri_rci = pri_rci, prg_ihm = prg_ihm, &        
+                  prr_rci = prr_rci , pri_wfz = pri_wfz , pri_rfz = pri_rfz, &       
+                  prg_rfz = prg_rfz, prs_scw = prs_scw, prg_scw = prg_scw, prg_gcw = prg_gcw, prg_rcg = prg_rcg, &    
                   ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde           , &
                   ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme           , &
                   its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte             &
@@ -414,7 +459,34 @@
        call mpas_timer_start('mp_thompson_aerosols')
        istep = 1
        do while (istep .le. n_microp)
-       call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
+          call mpas_pool_get_array(diag_physics, 'prs_sde', prs_sde)
+          call mpas_pool_get_array(diag_physics, 'prs_ide', prs_ide)
+          call mpas_pool_get_array(diag_physics, 'prg_gde', prg_gde)
+          call mpas_pool_get_array(diag_physics, 'pri_inu', pri_inu)
+          call mpas_pool_get_array(diag_physics, 'pri_iha', pri_iha)
+          call mpas_pool_get_array(diag_physics, 'pri_ide', pri_ide)
+          call mpas_pool_get_array(diag_physics, 'prv_rev', prv_rev)
+          call mpas_pool_get_array(diag_physics, 'prr_wau', prr_wau)
+          call mpas_pool_get_array(diag_physics, 'prr_rcw', prr_rcw)
+          call mpas_pool_get_array(diag_physics, 'prw_imi', prw_imi)
+          call mpas_pool_get_array(diag_physics, 'prr_gml', prr_gml)
+          call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
+          call mpas_pool_get_array(diag_physics, 'prs_sci', prs_sci)
+          call mpas_pool_get_array(diag_physics, 'prs_ihm', prs_ihm)
+          call mpas_pool_get_array(diag_physics, 'prs_iau', prs_iau)
+          call mpas_pool_get_array(diag_physics, 'pri_rci', pri_rci)
+          call mpas_pool_get_array(diag_physics, 'prg_ihm', prg_ihm)
+          call mpas_pool_get_array(diag_physics, 'prr_rcs', prr_rcs)
+          call mpas_pool_get_array(diag_physics, 'prr_rcg', prr_rcg)
+          call mpas_pool_get_array(diag_physics, 'prr_rci', prr_rci)
+          call mpas_pool_get_array(diag_physics, 'pri_wfz', pri_wfz)
+          call mpas_pool_get_array(diag_physics, 'pri_rfz', pri_rfz)
+          call mpas_pool_get_array(diag_physics, 'prg_rfz', prg_rfz)
+          call mpas_pool_get_array(diag_physics, 'prs_scw', prs_scw)
+          call mpas_pool_get_array(diag_physics, 'prg_scw', prg_scw)
+          call mpas_pool_get_array(diag_physics, 'prg_gcw', prg_gcw)
+          call mpas_pool_get_array(diag_physics, 'prg_rcg', prg_rcg)
+          
        call mp_gt_driver( &
                   th        = th_p        , qv         = qv_p         , qc         = qc_p         , &
                   qr        = qr_p        , qi         = qi_p         , qs         = qs_p         , &
@@ -429,6 +501,13 @@
                   nc        = nc_p        , nifa       = nifa_p       , nwfa       = nwfa_p       , &
                   nifa2d    = nifa2d_p    , nwfa2d     = nwfa2d_p     , ntc        = ntc_p        , &
                   muc       = muc_p       , prw_vcd = prw_vcd,                                     &
+                  prs_sde = prs_sde, prs_ide = prs_ide, prg_gde = prg_gde , pri_inu = pri_inu ,&
+                  pri_iha = pri_iha , pri_ide = pri_ide,  &
+                  prv_rev = prv_rev , prr_wau = prr_wau , prr_rcw = prr_rcw, &
+                  prw_imi = prw_imi , prr_gml = prr_gml , prr_rcs = prr_rcs , prr_rcg= prr_rcg, &
+                  prs_sci = prs_sci , prs_ihm = prs_ihm , prs_iau = prs_iau , pri_rci = pri_rci, prg_ihm = prg_ihm, &        
+                  prr_rci = prr_rci , pri_wfz = pri_wfz , pri_rfz = pri_rfz, &       
+                  prg_rfz = prg_rfz, prs_scw = prs_scw, prg_scw = prg_scw, prg_gcw = prg_gcw, prg_rcg = prg_rcg, &    
                   ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde           , &
                   ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme           , &
                   its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte             &

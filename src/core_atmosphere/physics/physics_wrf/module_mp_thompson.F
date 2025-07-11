@@ -1006,6 +1006,14 @@
                               GRAUPELNC, GRAUPELNCV, SR,              &
                               rainprod, evapprod,                     &
                               prw_vcd,                                &
+                              prs_sde, prs_ide, prg_gde, pri_inu,&
+                              pri_iha, pri_ide,  &
+                              prv_rev, prr_wau, prr_rcw, &
+                              prw_imi, prr_gml, prr_rcs, prr_rcg, & 
+                              prs_sci, prs_ihm, prs_iau, pri_rci, prg_ihm, &
+                              prr_rci, pri_wfz, pri_rfz, & 
+                              prg_rfz, prs_scw, prg_scw, prg_gcw, prg_rcg, &   
+                              
                               refl_10cm, diagflag, do_radar_ref,      &
                               re_cloud, re_ice, re_snow,              &
                               has_reqc, has_reqi, has_reqs,           &
@@ -1038,8 +1046,18 @@
                           SNOWNC, SNOWNCV, GRAUPELNC, GRAUPELNCV
       REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(INOUT):: &
       rainprod,evapprod
+      
+      ! Microphysical process rates - added by Julia Kukulies, 2025 
       REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::       &
-                          prw_vcd
+      prw_vcd, prs_sde, prs_ide, prg_gde, pri_inu,&
+      pri_iha, pri_ide,  &
+      prv_rev, prr_wau, prr_rcw, &
+      prw_imi, prr_gml, prr_rcs, prr_rcg
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::       &
+      prs_sci, prs_ihm, prs_iau, pri_rci, prg_ihm, &
+      prr_rci, pri_wfz, pri_rfz, & 
+      prg_rfz, prs_scw, prg_scw, prg_gcw, prg_rcg  
+     
 #if defined(mpas)
       REAL, DIMENSION(ims:ime, jms:jme), INTENT(IN):: &
                           ntc,muc
@@ -1059,7 +1077,19 @@
                           t1d, p1d, w1d, dz1d, rho, dBZ
       REAL, DIMENSION(kts:kte):: re_qc1d, re_qi1d, re_qs1d
       REAL, DIMENSION(kts:kte):: rainprod1d, evapprod1d
-      REAL, DIMENSION(kts:kte):: prw_vcd1d 
+      REAL, DIMENSION(kts:kte):: prw_vcd1d
+
+      ! Microphysical process rates - added by Julia Kukulies, 2025 
+      REAL, DIMENSION(kts:kte):: &
+      prs_sde1d, prs_ide1d, prg_gde1d, pri_inu1d,&
+      pri_iha1d, pri_ide1d,  &
+      prv_rev1d, prr_wau1d, prr_rcw1d, &
+      prw_imi1d, prr_gml1d, prr_rcs1d, prr_rcg1d
+      REAL, DIMENSION(kts:kte):: &
+      prs_sci1d, prs_ihm1d, prs_iau1d, pri_rci1d, prg_ihm1d, &
+      prr_rci1d, pri_wfz1d, pri_rfz1d, & 
+      prg_rfz1d, prs_scw1d, prg_scw1d, prg_gcw1d, prg_rcg1d
+      
       REAL, DIMENSION(its:ite, jts:jte):: pcp_ra, pcp_sn, pcp_gr, pcp_ic
       REAL:: dt, pptrain, pptsnow, pptgraul, pptice
       REAL:: qc_max, qr_max, qs_max, qi_max, qg_max, ni_max, nr_max
@@ -1189,6 +1219,13 @@
                       nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dz1d,  &
                       pptrain, pptsnow, pptgraul, pptice,               &
                       rainprod1d, evapprod1d, prw_vcd1d,                &
+                      prs_sde1d, prs_ide1d, prg_gde1d, pri_inu1d,&
+                      pri_iha1d, pri_ide1d,  &
+                      prv_rev1d, prr_wau1d, prr_rcw1d, &
+                      prw_imi1d, prr_gml1d, prr_rcg1d, & 
+                      prs_sci1d, prs_ihm1d, prs_iau1d, pri_rci1d, prg_ihm1d, &
+                      prr_rcs1d, prr_rci1d, pri_wfz1d, pri_rfz1d, & 
+                      prg_rfz1d, prs_scw1d, prg_scw1d, prg_gcw1d, prg_rcg1d, &   
                       kts, kte, dt, i, j)
 
          pcp_ra(i,j) = pptrain
@@ -1235,6 +1272,32 @@
             nr(i,k,j) = nr1d(k)
             th(i,k,j) = t1d(k)/pii(i,k,j)
             prw_vcd(i,k,j) = prw_vcd1d(k)
+            prs_sde(i,k,j) = prs_sde1d(k)
+            prs_ide(i,k,j) = prs_ide1d(k)
+            prg_gde(i,k,j) = prg_gde1d(k)
+            pri_inu(i,k,j) = pri_inu1d(k)
+            pri_iha(i,k,j) = pri_iha1d(k)
+            pri_ide(i,k,j) = pri_ide1d(k)
+            prv_rev(i,k,j) = prv_rev1d(k)
+            prr_wau(i,k,j) = prr_wau1d(k)
+            prr_rcw(i,k,j) = prr_rcw1d(k)
+            prw_imi(i,k,j) = prw_imi1d(k)
+            prr_gml(i,k,j) = prr_gml1d(k)
+            prr_rcs(i,k,j) = prr_rcs1d(k)
+            prr_rcg(i,k,j) = prr_rcg1d(k)
+            prs_sci(i,k,j) = prs_sci1d(k)
+            prs_ihm(i,k,j) = prs_ihm1d(k)
+            prs_iau(i,k,j) = prs_iau1d(k)
+            pri_rci(i,k,j) = pri_rci1d(k)
+            prg_ihm(i,k,j) = prg_ihm1d(k)
+            prr_rci(i,k,j) = prr_rci1d(k)
+            pri_wfz(i,k,j) = pri_wfz1d(k)
+            pri_rfz(i,k,j) = pri_rfz1d(k)
+            prg_rfz(i,k,j) = prg_rfz1d(k)
+            prs_scw(i,k,j) = prs_scw1d(k)
+            prg_scw(i,k,j) = prg_scw1d(k)
+            prg_gcw(i,k,j) = prg_gcw1d(k)
+            prg_rcg(i,j,k) = prg_rcg1d(k)
 #if defined(mpas)
             rainprod(i,k,j) = rainprod1d(k)
             evapprod(i,k,j) = evapprod1d(k)
@@ -1405,7 +1468,15 @@
       subroutine mp_thompson (qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d,   &
                           nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dzq, &
                           pptrain, pptsnow, pptgraul, pptice,             &
-                          rainprod, evapprod, prw_vcd,                    &
+                          rainprod, evapprod,                             &
+                          prw_vcd,                                &
+                          prs_sde, prs_ide, prg_gde, pri_inu,&
+                          pri_iha, pri_ide,  &
+                          prv_rev, prr_wau, prr_rcw, &
+                          prw_imi, prr_gml, prr_rcg, & 
+                          prs_sci, prs_ihm, prs_iau, pri_rci, prg_ihm, &
+                          prr_rcs, prr_rci, pri_wfz, pri_rfz, & 
+                          prg_rfz, prs_scw, prg_scw, prg_gcw, prg_rcg, &   
                           kts, kte, dt, ii, jj)
 
       implicit none
@@ -1420,39 +1491,39 @@
       REAL, INTENT(IN):: dt
       REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
       rainprod, evapprod
+      ! Microphysical process rates - added by Julia Kukulies, 2025 
       REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
-                          prw_vcd
-
+      prw_vcd, prs_sde, prs_ide, prg_gde, pri_inu,&
+      pri_iha, pri_ide,  &
+      prv_rev, prr_wau, prr_rcw, &
+      prw_imi, prr_gml
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
+      prs_sci, prs_ihm, prs_iau, pri_rci, prg_ihm, &
+      prr_rcs, prr_rcg, prr_rci, pri_wfz, pri_rfz, & 
+      prg_rfz, prs_scw, prg_scw, prg_gcw, prg_rcg  
+     
 !..Local variables
       REAL, DIMENSION(kts:kte):: tten, qvten, qcten, qiten, &
            qrten, qsten, qgten, niten, nrten, ncten, nwfaten, nifaten
 
       DOUBLE PRECISION, DIMENSION(kts:kte):: pnc_wcd, pnc_wau, pnc_rcw, &
-           pnc_scw, pnc_gcw
+      pnc_scw, pnc_gcw
+
+      DOUBLE PRECISION, DIMENSION(kts:kte):: prr_sml, pni_inu, pri_ihm, &
+      prs_rcs, prg_rci, prg_rcs
 
       DOUBLE PRECISION, DIMENSION(kts:kte):: pna_rca, pna_sca, pna_gca, &
            pnd_rcd, pnd_scd, pnd_gcd
 
-      DOUBLE PRECISION, DIMENSION(kts:kte):: prr_wau, prr_rcw, prr_rcs, &
-           prr_rcg, prr_sml, prr_gml, &
-           prr_rci, prv_rev,          &
-           pnr_wau, pnr_rcs, pnr_rcg, &
+      DOUBLE PRECISION, DIMENSION(kts:kte):: pnr_wau, pnr_rcs, pnr_rcg, &
            pnr_rci, pnr_sml, pnr_gml, &
            pnr_rev, pnr_rcr, pnr_rfz
 
-      DOUBLE PRECISION, DIMENSION(kts:kte):: pri_inu, pni_inu, pri_ihm, &
-           pni_ihm, pri_wfz, pni_wfz, &
-           pri_rfz, pni_rfz, pri_ide, &
-           pni_ide, pri_rci, pni_rci, &
-           pni_sci, pni_iau, pri_iha, pni_iha
+      DOUBLE PRECISION, DIMENSION(kts:kte):: pni_ihm, pni_wfz, &
+           pni_rfz, &
+           pni_ide, pni_rci, &
+           pni_sci, pni_iau, pni_iha
 
-      DOUBLE PRECISION, DIMENSION(kts:kte):: prs_iau, prs_sci, prs_rcs, &
-           prs_scw, prs_sde, prs_ihm, &
-           prs_ide
-
-      DOUBLE PRECISION, DIMENSION(kts:kte):: prg_scw, prg_rfz, prg_gde, &
-           prg_gcw, prg_rci, prg_rcs, &
-           prg_rcg, prg_ihm
 
       DOUBLE PRECISION, PARAMETER:: zeroD0 = 0.0d0
 
@@ -1558,6 +1629,7 @@
          nifaten(k) = 0.
 
          prw_vcd(k) = 0.
+         prw_imi(k) = 0.
 
          pnc_wcd(k) = 0.
          pnc_wau(k) = 0.
@@ -1573,6 +1645,7 @@
          prr_sml(k) = 0.
          prr_gml(k) = 0.
          prr_rci(k) = 0.
+         
          pnr_wau(k) = 0.
          pnr_rcs(k) = 0.
          pnr_rcg(k) = 0.

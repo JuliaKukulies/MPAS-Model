@@ -625,6 +625,32 @@
 			<var name="rainprod"/>
 			<var name="evapprod"/>
 			<var name="prw_vcd"/>
+			<var name="prs_sde"/>
+			<var name="prs_ide"/>
+			<var name="prg_gde"/>
+			<var name="pri_inu"/>
+			<var name="pri_iha"/>
+			<var name="pri_ide"/>
+			<var name="prv_rev"/>
+			<var name="prr_wau"/>
+			<var name="prr_rcw"/>
+			<var name="prw_imi"/>
+			<var name="prr_gml"/>
+			<var name="prr_rcs"/>
+			<var name="prr_rcg"/>
+			<var name="prs_sci"/>
+			<var name="prs_ihm"/>
+			<var name="prs_iau"/>
+			<var name="pri_rci"/>
+			<var name="prg_ihm"/>
+			<var name="prr_rci"/>
+			<var name="pri_wfz"/>
+			<var name="pri_rfz"/>
+			<var name="prg_rfz"/>
+			<var name="prs_scw"/>
+			<var name="prg_scw"/>
+			<var name="prg_gcw"/>
+			<var name="prg_rcg"/>
 			<var name="re_cloud"/>
 			<var name="re_ice"/>
 			<var name="re_snow"/>
@@ -2531,9 +2557,88 @@
                 <var name="rainprod" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="rain production rate"
                      packages="mp_thompson_in;mp_thompson_aers_in;mp_wsm6_in"/>
+		
                 <var name="prw_vcd" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="condensation rate"
                      packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prs_ide" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="deposition on ice"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prs_sde" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="deposition on snow"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prg_gde" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="deposition on graupel"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="pri_inu" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="ice nucleation"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="pri_iha" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="freezing of aerosols"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="pri_ide" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="deposition on ice"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prv_rev" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="evaporation of rain"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prr_wau" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="autoconversion"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+		<var name="prr_rcw" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="accretion"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prw_imi" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="melting of ice"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prr_gml" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="melting of graupel"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prr_rcs" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of snow by rain"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prr_rcg" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of graupel by rain"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prs_sci" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of ice by snow"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prs_ihm" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="Hallet–Mossop process"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prs_iau" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="autoconversion (ice to snow)"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="pri_rci" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of ice by rain"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prg_ihm" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="Hallet–Mossop process"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prr_rci" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of ice by rain"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+		<var name="pri_wfz" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="freezing of droplets"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="pri_rfz" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="freezing of rain to ice"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prg_rfz" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="freezing of rain to graupel"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prs_scw" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="cocllection of droplets by snow"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+               <var name="prg_scw" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of droplets by snow"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+                <var name="prg_gcw" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of droplets by graupel"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>
+               <var name="prg_rcg" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
+                     description="collection of rain by graupel"
+                     packages="mp_thompson_in;mp_thompson_aers_in"/>		
                 <var name="evapprod" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="rain evaporation rate"
                      packages="mp_thompson_in;mp_thompson_aers_in;mp_wsm6_in"/>
