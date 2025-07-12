@@ -5,30 +5,52 @@
 
 <var_struct name="diag" time_levs="1">
     <!-- Vertically integrated condensation rate -->
-    <var name="condensation_rate_vint" 
+    <var name="condensation_vint" 
          type="real" 
          dimensions="nCells Time" 
          units="kg m^-2 s^-1"
          description="Vertical integral of instaneous condensation rate"/>
     
-    <var name="condensation_rate_vint_acc"
+    <var name="condensation_vint_acc"
 	 type="real"
 	 dimensions="nCells Time" 
 	 units="kg m^-2" 
 	 description="Vertical integral of accumulated condensation rate"/>
 
 
+    <var name="evaporation_vint" 
+         type="real" 
+         dimensions="nCells Time" 
+         units="kg m^-2 s^-1"
+         description="Vertical integral of instaneous condensation rate"/>
+    
+    <var name="evaporation_vint_acc"
+	 type="real"
+	 dimensions="nCells Time" 
+	 units="kg m^-2" 
+	 description="Vertical integral of accumulated condensation rate"/>
 
-
-    <var name="condensation_rate"
-         type="real"
-         dimensions="nVertLevels nCells Time"
-         units="kg kg^-1 s^-1"
-         description="Instantaneous condensation rate at model levels"/>
-
-    <var name="condensation_rate_acc"
-         type="real"
-         dimensions="nVertLevels nCells Time"
-         units="kg kg^-1"
-         description="Accumulated condensation rate at model levels"/>
+    <var name="deposition_vint" 
+         type="real" 
+         dimensions="nCells Time" 
+         units="kg m^-2 s^-1"
+         description="Vertical integral of instaneous condensation rate"/>
+    
+    <var name="deposition_vint_acc"
+	 type="real"
+	 dimensions="nCells Time" 
+	 units="kg m^-2" 
+	 description="Vertical integral of accumulated condensation rate"/>
+    
+    <var name="sublimation_vint" 
+         type="real" 
+         dimensions="nCells Time" 
+         units="kg m^-2 s^-1"
+         description="Vertical integral of instaneous condensation rate"/>
+    
+    <var name="sublimation_vint_acc"
+	 type="real"
+	 dimensions="nCells Time" 
+	 units="kg m^-2" 
+	 description="Vertical integral of accumulated condensation rate"/>    
 </var_struct>

@@ -1,169 +1,132 @@
 module mpas_microphysics
-
   use mpas_kind_types, only : RKIND
   use mpas_derived_types, only : MPAS_pool_type, MPAS_clock_type
-  use mpas_pool_routines, only : mpas_pool_get_subpool, &
-                                 mpas_pool_get_array, &
-                                 mpas_pool_get_dimension
+  use mpas_pool_routines, only : mpas_pool_get_subpool, mpas_pool_get_array, mpas_pool_get_dimension
   use mpas_log, only : mpas_log_write
 
   implicit none
 
-  ! Physical constants
   real(kind=RKIND), parameter :: gravity = 9.80616_RKIND
 
-  ! Pools
   type(MPAS_pool_type), pointer :: mesh => null()
   type(MPAS_pool_type), pointer :: state => null()
   type(MPAS_pool_type), pointer :: diag => null()
   type(MPAS_pool_type), pointer :: diag_physics => null()
 
-  ! Dimensions
   integer, pointer :: nCells => null()
   integer, pointer :: nVertLevels => null()
 
-  ! Input arrays
-  real(kind=RKIND), dimension(:,:), pointer :: pressure => null() 
-  real(kind=RKIND), dimension(:,:), pointer :: prw_vcd => null() ! ! from microphysics diag_physics pool
+  ! input: prw_vcd is the total condensation/ evaporation 
+  real(kind=RKIND), dimension(:,:), pointer :: pressure => null()
+  real(kind=RKIND), dimension(:,:), pointer :: prw_vcd => null()
+      
+  ! deposition process rates
+  real(kind=RKIND), dimension(:,:), pointer :: prs_ide => null(), prs_sde => null()
+  real(kind=RKIND), dimension(:,:), pointer :: prg_gde => null(), pri_inu => null()
+  real(kind=RKIND), dimension(:,:), pointer :: pri_iha => null(), pri_ide => null()
 
-  ! Accumulated 3D field for condensation_rate_acc
-  real(kind=RKIND), dimension(:,:), pointer :: condensation_rate_acc => null() 
+! diagnostics
+  real(kind=RKIND), dimension(:),   pointer :: condensation_vint => null()
+  real(kind=RKIND), dimension(:),   pointer :: condensation_vint_acc => null()
+  real(kind=RKIND), dimension(:), pointer :: evaporation_vint => null()
+  real(kind=RKIND), dimension(:), pointer :: evaporation_vint_acc => null()
+  real(kind=RKIND), dimension(:), pointer :: deposition_vint => null()
+  real(kind=RKIND), dimension(:), pointer :: deposition_vint_acc => null()
+  real(kind=RKIND), dimension(:), pointer :: sublimation_vint => null()
+  real(kind=RKIND), dimension(:), pointer :: sublimation_vint_acc => null()
 
-  ! Output arrays for diagnostics
-  real(kind=RKIND), dimension(:,:), pointer :: condensation_rate => null()    ! instantaneous (equal to prw_vcd)
-  real(kind=RKIND), dimension(:), pointer :: condensation_rate_vint => null()
-  real(kind=RKIND), dimension(:), pointer :: condensation_rate_vint_acc => null()
-
-  ! Internal state
   logical :: arrays_associated = .false.
   logical :: first_call = .true.
 
-  public :: mpas_microphysics_setup, &
-            mpas_microphysics_compute, &
-            mpas_microphysics_reset, &
-            mpas_microphysics_cleanup
+  public :: mpas_microphysics_setup, mpas_microphysics_compute, mpas_microphysics_update, &
+            mpas_microphysics_reset, mpas_microphysics_cleanup
 
 contains
 
+  subroutine mpas_microphysics_setup(configs, structs, clock)
+    use mpas_log, only : mpas_log_write
+    implicit none
+    type(MPAS_pool_type), pointer :: configs, structs
+    type(MPAS_clock_type), pointer :: clock
+    character(len=200) :: msg
+    logical :: assoc
 
-subroutine mpas_microphysics_setup(configs, structs, clock)
-  use mpas_log, only : mpas_log_write
-  implicit none
+    call mpas_pool_get_subpool(structs, 'mesh', mesh)
+    call mpas_pool_get_subpool(structs, 'state', state)
+    call mpas_pool_get_subpool(structs, 'diag', diag)
+    call mpas_pool_get_subpool(structs, 'diag_physics', diag_physics)
 
-  type(MPAS_pool_type), pointer :: configs
-  type(MPAS_pool_type), pointer :: structs
-  type(MPAS_clock_type), pointer :: clock
+    if (.not. associated(mesh)) then
+      call mpas_log_write('FATAL ERROR: mesh pool not found!'); stop 1
+    end if
+    if (.not. associated(state)) then
+      call mpas_log_write('FATAL ERROR: state pool not found!'); stop 1
+    end if
+    if (.not. associated(diag_physics)) then
+      call mpas_log_write('FATAL ERROR: diag_physics pool not found!'); stop 1
+    end if
+    if (.not. associated(diag)) then
+      call mpas_log_write('WARNING: diag pool not found; some output arrays will be missing')
+    end if
 
-  character(len=100) :: msg
-  logical :: assoc
+    call mpas_pool_get_dimension(mesh, 'nCells', nCells)
+    call mpas_pool_get_dimension(mesh, 'nVertLevels', nVertLevels)
 
-  ! Connect pools
-  call mpas_pool_get_subpool(structs, 'mesh', mesh)
-  call mpas_pool_get_subpool(structs, 'state', state)
-  call mpas_pool_get_subpool(structs, 'diag', diag)
-  call mpas_pool_get_subpool(structs, 'diag_physics', diag_physics)
+    call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
+    call mpas_pool_get_array(diag_physics, 'prs_ide', prs_ide)
+    call mpas_pool_get_array(diag_physics, 'prs_sde', prs_sde)
+    call mpas_pool_get_array(diag_physics, 'prg_gde', prg_gde)
+    call mpas_pool_get_array(diag_physics, 'pri_inu', pri_inu)
+    call mpas_pool_get_array(diag_physics, 'pri_iha', pri_iha)
+    call mpas_pool_get_array(diag_physics, 'pri_ide', pri_ide)
 
-  if (.not. associated(mesh)) then
-    call mpas_log_write('FATAL ERROR: mesh pool not found!')
-    stop 1
-  end if
+    if (associated(diag)) then
+      call mpas_pool_get_array(diag, 'condensation_vint', condensation_vint)
+      call mpas_pool_get_array(diag, 'condensation_vint_acc', condensation_vint_acc)
+      call mpas_pool_get_array(diag, 'evaporation_vint', evaporation_vint)
+      call mpas_pool_get_array(diag, 'evaporation_vint_acc', evaporation_vint_acc)
+      call mpas_pool_get_array(diag, 'deposition_vint', deposition_vint)
+      call mpas_pool_get_array(diag, 'deposition_vint_acc', deposition_vint_acc)
+      call mpas_pool_get_array(diag, 'sublimation_vint', sublimation_vint)
+      call mpas_pool_get_array(diag, 'sublimation_vint_acc', sublimation_vint_acc)
+      call mpas_pool_get_array(diag, 'pressure', pressure)
+    end if
 
-  if (.not. associated(state)) then
-    call mpas_log_write('FATAL ERROR: state pool not found!')
-    stop 1
-  end if
+      if (first_call) then
+      if (associated(condensation_vint)) condensation_vint(:) = 0.0_RKIND
+      if (associated(sublimation_vint)) sublimation_vint(:) = 0.0_RKIND
+      if (associated(deposition_vint)) deposition_vint(:) = 0.0_RKIND
+      if (associated(evaporation_vint)) evaporation_vint(:) = 0.0_RKIND
+      if (associated(condensation_vint_acc)) condensation_vint_acc(:) = 0.0_RKIND
+      if (associated(evaporation_vint_acc)) evaporation_vint_acc(:) = 0.0_RKIND
+      if (associated(deposition_vint_acc)) deposition_vint_acc(:) = 0.0_RKIND
+      if (associated(sublimation_vint_acc)) sublimation_vint_acc(:) = 0.0_RKIND
+      call mpas_log_write('INFO: Initialized diagnostics for microphysics to zero.')
+      first_call = .false.
+    end if
 
-  if (.not. associated(diag_physics)) then
-    call mpas_log_write('FATAL ERROR: diag_physics pool not found!')
-    stop 1
-  end if
+    ! check if we actually associate these arrays 
+    arrays_associated = associated(prw_vcd) .and. associated(pressure) .and. associated(evaporation_vint_acc) &
+      .and. associated(deposition_vint_acc) .and. associated(sublimation_vint_acc) &
+      .and. associated(condensation_vint_acc)
 
-  if (.not. associated(diag)) then
-    call mpas_log_write('WARNING: diag pool not found; output arrays may not be available')
-  end if
-
-  ! Get dimensions
-  call mpas_pool_get_dimension(mesh, 'nCells', nCells)
-  call mpas_pool_get_dimension(mesh, 'nVertLevels', nVertLevels)
-
-  ! Get input array
-  call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
-  if (.not. associated(prw_vcd)) then
-    call mpas_log_write('FATAL ERROR: prw_vcd array not associated after retrieval.')
-    stop 1
-  else
-    write(msg, '(A,I0,A,I0)') 'INFO: prw_vcd successfully associated. Size: ', &
-         size(prw_vcd,1), ' x ', size(prw_vcd,2)
-    call mpas_log_write(trim(msg))
-  end if
-
-  ! Get output arrays
-  if (associated(diag)) then
-    call mpas_pool_get_array(diag, 'condensation_rate', condensation_rate)
-    call mpas_pool_get_array(diag, 'condensation_rate_vint', condensation_rate_vint)
-    call mpas_pool_get_array(diag, 'condensation_rate_vint_acc', condensation_rate_vint_acc)
-    call mpas_pool_get_array(diag, 'condensation_rate_acc', condensation_rate_acc)
-    call mpas_pool_get_array(diag, 'pressure', pressure)
-
-    assoc = associated(condensation_rate)
-    write(msg, '(A,L1)') 'INFO: condensation_rate associated: ', assoc
-    call mpas_log_write(trim(msg))
-
-    assoc = associated(condensation_rate_acc)
-    write(msg, '(A,L1)') 'INFO: condensation_rate_acc associated: ', assoc
-    call mpas_log_write(trim(msg))
-
-    assoc = associated(condensation_rate_vint)
-    write(msg, '(A,L1)') 'INFO: condensation_rate_vint associated: ', assoc
-    call mpas_log_write(trim(msg))
-
-    assoc = associated(condensation_rate_vint_acc)
-    write(msg, '(A,L1)') 'INFO: condensation_rate_vint_acc associated: ', assoc
-    call mpas_log_write(trim(msg))
-
-    assoc = associated(pressure)
-    write(msg, '(A,L1)') 'INFO: pressure associated: ', assoc
-    call mpas_log_write(trim(msg))
-  end if
-
-  ! Initialize arrays on first call
-  if (first_call) then
-    if (associated(condensation_rate))        condensation_rate        = 0.0_RKIND
-    if (associated(condensation_rate_acc))    condensation_rate_acc    = 0.0_RKIND
-    if (associated(condensation_rate_vint))   condensation_rate_vint   = 0.0_RKIND
-    if (associated(condensation_rate_vint_acc)) condensation_rate_vint_acc = 0.0_RKIND
-
-    first_call = .false.
-    call mpas_log_write('INFO: Initialized condensation_rate arrays to zero.')
-  end if
-
-  arrays_associated = associated(prw_vcd) .and. associated(condensation_rate_acc) .and. &
-                      associated(condensation_rate) .and. associated(condensation_rate_vint) .and. &
-                      associated(condensation_rate_vint_acc) .and. associated(pressure)
-
-  if (.not. arrays_associated) then
-    call mpas_log_write('WARNING: Some condensation_rate arrays are not associated:')
-    if (.not. associated(prw_vcd))               call mpas_log_write('  prw_vcd NOT associated')
-    if (.not. associated(condensation_rate_acc)) call mpas_log_write('  condensation_rate_acc NOT associated')
-    if (.not. associated(condensation_rate))     call mpas_log_write('  condensation_rate NOT associated')
-    if (.not. associated(condensation_rate_vint))call mpas_log_write('  condensation_rate_vint NOT associated')
-    if (.not. associated(condensation_rate_vint_acc)) call mpas_log_write('  condensation_rate_vint_acc NOT associated')
-    if (.not. associated(pressure))              call mpas_log_write('  pressure NOT associated')
-  end if
-
-end subroutine mpas_microphysics_setup
-
+  end subroutine mpas_microphysics_setup
 
 
 subroutine mpas_microphysics_update()
   integer :: iCell, k
   real(kind=RKIND) :: p_top, p_bot, dp, layer_mass
-  real(kind=RKIND) :: prw_val, vert_int_inst
+  real(kind=RKIND) :: condensation, evaporation
+  real(kind=RKIND) :: sum_dep, sum_sub
+  real(kind=RKIND) :: vert_inst_cr, vert_inst_evap, vert_inst_dep, vert_inst_sub
 
   if (.not. arrays_associated) return
 
   do iCell = 1, nCells
-    vert_int_inst = 0.0_RKIND
+    vert_inst_cr    = 0.0_RKIND
+    vert_inst_evap  = 0.0_RKIND
+    vert_inst_dep   = 0.0_RKIND
+    vert_inst_sub   = 0.0_RKIND
 
     do k = nVertLevels, 2, -1
       p_top = pressure(k, iCell)
@@ -171,85 +134,141 @@ subroutine mpas_microphysics_update()
       dp = p_bot - p_top
       layer_mass = dp / gravity
 
-      prw_val = max(0.0_RKIND, prw_vcd(k, iCell))
+      condensation = max(0.0_RKIND, prw_vcd(k, iCell))
+      evaporation = -min(0.0_RKIND, prw_vcd(k, iCell))
 
-      ! Store instantaneous condensation_rate (instantaneous diagnostic)
-      if (associated(condensation_rate)) condensation_rate(k, iCell) = prw_val
+      ! --- Condensation ---
+      vert_inst_cr = vert_inst_cr + condensation * layer_mass
+      
+      ! --- Evaporation ---
+      vert_inst_evap = vert_inst_evap + evaporation * layer_mass
+      
+      ! --- Deposition and Sublimation ---
+      sum_dep = 0.0_RKIND
+      sum_sub = 0.0_RKIND
 
-      ! Accumulate instantaneous condensation rate over time
-      if (associated(condensation_rate_acc)) condensation_rate_acc(k, iCell) = &
-           condensation_rate_acc(k, iCell) + prw_val
+      if (prs_ide(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + prs_ide(k,iCell)
+      if (prs_ide(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - prs_ide(k,iCell)
 
-      ! Accumulate vertical integral of instantaneous condensation rate
-      vert_int_inst = vert_int_inst + prw_val * layer_mass
+      if (prs_sde(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + prs_sde(k,iCell)
+      if (prs_sde(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - prs_sde(k,iCell)
+
+      if (prg_gde(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + prg_gde(k,iCell)
+      if (prg_gde(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - prg_gde(k,iCell)
+
+      if (pri_inu(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + pri_inu(k,iCell)
+      if (pri_inu(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - pri_inu(k,iCell)
+
+      if (pri_iha(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + pri_iha(k,iCell)
+      if (pri_iha(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - pri_iha(k,iCell)
+
+      if (pri_ide(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + pri_ide(k,iCell)
+      if (pri_ide(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - pri_ide(k,iCell)
+
+      vert_inst_dep = vert_inst_dep + sum_dep * layer_mass
+      vert_inst_sub = vert_inst_sub + sum_sub * layer_mass
     end do
 
-    ! Accumulate vertical integral over time
-    if (associated(condensation_rate_vint_acc)) condensation_rate_vint_acc(iCell) = &
-         condensation_rate_vint_acc(iCell) + vert_int_inst
+    if (associated(condensation_vint_acc)) condensation_vint_acc(iCell) = &
+         condensation_vint_acc(iCell) + vert_inst_cr
+    if (associated(evaporation_vint_acc)) evaporation_vint_acc(iCell) = &
+         evaporation_vint_acc(iCell) + vert_inst_evap
+    if (associated(deposition_vint_acc)) deposition_vint_acc(iCell) = &
+         deposition_vint_acc(iCell) + vert_inst_dep
+    if (associated(sublimation_vint_acc)) sublimation_vint_acc(iCell) = &
+         sublimation_vint_acc(iCell) + vert_inst_sub
   end do
-      
 end subroutine mpas_microphysics_update
 
 
 subroutine mpas_microphysics_compute()
   integer :: iCell, k
   real(kind=RKIND) :: p_top, p_bot, dp, layer_mass
-  real(kind=RKIND) :: vert_int_inst
-      
-  character(len=256) :: message
-  real(kind=RKIND) :: min_cr, max_cr
-  real(kind=RKIND) :: min_vint, max_vint
-  real(kind=RKIND) :: prw_val
-     
+  real(kind=RKIND) :: vert_inst_cr, vert_inst_evap, vert_inst_dep, vert_inst_sub
+  real(kind=RKIND) :: condensation, evaporation, sum_dep, sum_sub
+
   if (.not. arrays_associated) return
 
+  condensation = max(0.0_RKIND, prw_vcd(k, iCell))
+  evaporation = -min(0.0_RKIND, prw_vcd(k, iCell))
   do iCell = 1, nCells
-    vert_int_inst = 0.0_RKIND
+    vert_inst_cr    = 0.0_RKIND
+    vert_inst_evap  = 0.0_RKIND
+    vert_inst_dep   = 0.0_RKIND
+    vert_inst_sub   = 0.0_RKIND
 
-    ! Compute vertical integral of instantaneous condensation_rate
     do k = nVertLevels, 2, -1
       p_top = pressure(k, iCell)
       p_bot = pressure(k-1, iCell)
       dp = p_bot - p_top
       layer_mass = dp / gravity
 
-      ! Clip negative values (since they are the evaporation rates) 
-      prw_val = max(0.0_RKIND, condensation_rate(k, iCell))
-      vert_int_inst = vert_int_inst + prw_val * layer_mass
+
+      vert_inst_cr = vert_inst_cr + condensation * layer_mass
+      vert_inst_evap = vert_inst_evap + evaporation * layer_mass
+     
+      ! --- Deposition and Sublimation from six process rates ---
+      sum_dep = 0.0_RKIND
+      sum_sub = 0.0_RKIND
+
+      if (prs_ide(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + prs_ide(k,iCell)
+      if (prs_ide(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - prs_ide(k,iCell)
+
+      if (prs_sde(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + prs_sde(k,iCell)
+      if (prs_sde(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - prs_sde(k,iCell)
+
+      if (prg_gde(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + prg_gde(k,iCell)
+      if (prg_gde(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - prg_gde(k,iCell)
+
+      if (pri_inu(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + pri_inu(k,iCell)
+      if (pri_inu(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - pri_inu(k,iCell)
+
+      if (pri_iha(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + pri_iha(k,iCell)
+      if (pri_iha(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - pri_iha(k,iCell)
+
+      if (pri_ide(k,iCell) > 0.0_RKIND) sum_dep = sum_dep + pri_ide(k,iCell)
+      if (pri_ide(k,iCell) < 0.0_RKIND) sum_sub = sum_sub - pri_ide(k,iCell)
+
+      vert_inst_dep = vert_inst_dep + sum_dep * layer_mass
+      vert_inst_sub = vert_inst_sub + sum_sub * layer_mass
     end do
 
-    ! Store instantaneous vertical integral diagnostic
-    if (associated(condensation_rate_vint)) condensation_rate_vint(iCell) = vert_int_inst
-      end do
-      
+    ! Store vertical integrals for inst value 
+    if (associated(condensation_vint)) condensation_vint(iCell) = vert_inst_cr
+    if (associated(evaporation_vint))  evaporation_vint(iCell)  = vert_inst_evap
+    if (associated(deposition_vint))        deposition_vint(iCell)        = vert_inst_dep
+    if (associated(sublimation_vint))       sublimation_vint(iCell)       = vert_inst_sub
+  end do
 end subroutine mpas_microphysics_compute
 
+      
+  subroutine mpas_microphysics_reset()
+    use mpas_atm_diagnostics_utils, only : MPAS_field_will_be_written
+    implicit none
 
-subroutine mpas_microphysics_reset()
-  use mpas_atm_diagnostics_utils, only : MPAS_field_will_be_written
-  implicit none
-
-  if (associated(condensation_rate_acc)) then
-    if (MPAS_field_will_be_written('condensation_rate_acc')) then
-      condensation_rate_acc(:,:) = 0.0_RKIND
+    call mpas_log_write('INFO: Resetting accumulators for extended diagnostics')
+    if (associated(condensation_vint_acc)) then
+      if (MPAS_field_will_be_written('condensation_vint_acc')) condensation_vint_acc(:) = 0.0_RKIND
     end if
-  end if
-
-  if (associated(condensation_rate_vint_acc)) then
-    if (MPAS_field_will_be_written('condensation_rate_vint_acc')) then
-      condensation_rate_vint_acc(:) = 0.0_RKIND
+    if (associated(evaporation_vint_acc)) then
+      if (MPAS_field_will_be_written('evaporation_vint_acc')) evaporation_vint_acc(:) = 0.0_RKIND
     end if
-  end if
-end subroutine mpas_microphysics_reset
+    if (associated(deposition_vint_acc)) then
+      if (MPAS_field_will_be_written('deposition_vint_acc')) deposition_vint_acc(:) = 0.0_RKIND
+    end if
+    if (associated(sublimation_vint_acc)) then
+      if (MPAS_field_will_be_written('sublimation_vint_acc')) sublimation_vint_acc(:) = 0.0_RKIND
+    end if
+  end subroutine mpas_microphysics_reset
 
-
-subroutine mpas_microphysics_cleanup()
+      
+ subroutine mpas_microphysics_cleanup()
     nullify(mesh, state, diag, diag_physics)
-    nullify(pressure, prw_vcd, condensation_rate_acc)
-    nullify(condensation_rate, condensation_rate_vint, condensation_rate_vint_acc)
+    nullify(pressure, prw_vcd, prs_ide, prs_sde, prg_gde, pri_inu, pri_iha, pri_ide)
+    nullify(condensation_vint, condensation_vint_acc)
+    nullify(evaporation_vint, evaporation_vint_acc, deposition_vint, deposition_vint_acc, sublimation_vint, sublimation_vint_acc)
     nullify(nCells, nVertLevels)
     arrays_associated = .false.
-end subroutine mpas_microphysics_cleanup
+  end subroutine mpas_microphysics_cleanup
 
 end module mpas_microphysics
