@@ -37,6 +37,7 @@
       use mpas_convective_diagnostics, only : convective_diagnostics_setup
       use mpas_pv_diagnostics, only : pv_diagnostics_setup
       use mpas_soundings, only : soundings_setup
+      use mpas_vertical_integrals, only : mpas_vertical_integrals_setup
       use mpas_microphysics ! <-- Add your module here
 
       implicit none
@@ -58,6 +59,7 @@
       call convective_diagnostics_setup(structs, clock)
       call pv_diagnostics_setup(structs, clock)
       call soundings_setup(configs, structs, clock, dminfo)
+      call mpas_vertical_integrals_setup(configs, structs, clock)    
 
      !Setup microphysics diagnostics
       call mpas_microphysics_setup(configs, structs, clock)
@@ -107,17 +109,19 @@
       use mpas_convective_diagnostics, only : convective_diagnostics_compute
       use mpas_pv_diagnostics, only : pv_diagnostics_compute
       use mpas_soundings, only : soundings_compute
-      use mpas_microphysics ! <-- Add your module here
+      use mpas_vertical_integrals, only : mpas_vertical_integrals_compute, &
+      lwp, iwp, ivt_u, ivt_v, ivt_mag
+      use mpas_microphysics
 
       implicit none
-
+      
       call diagnostic_template_compute()
       call isobaric_diagnostics_compute()
       call cloud_diagnostics_compute()
       call convective_diagnostics_compute()
       call pv_diagnostics_compute()
       call soundings_compute()
-
+      call mpas_vertical_integrals_compute()
       ! Compute microphysics diagnostics
       call mpas_microphysics_compute()
 
@@ -166,16 +170,17 @@
       use mpas_atm_diagnostics_utils, only : mpas_atm_diag_utils_finalize
       use mpas_diagnostic_template, only : diagnostic_template_cleanup
       use mpas_soundings, only : soundings_cleanup
-      use mpas_microphysics ! <-- Add your module here
+      use mpas_vertical_integrals, only : mpas_vertical_integrals_cleanup
+      use mpas_microphysics 
 
       implicit none
 
       call diagnostic_template_cleanup()
       call soundings_cleanup()
+      call mpas_vertical_integrals_cleanup()   
 
-! Cleanup microphysics diagnostics
+      ! Cleanup microphysics diagnostics
       call mpas_microphysics_cleanup()
-
 !
 ! Take care of any needed cleanup in the diagnostics utility module
 !

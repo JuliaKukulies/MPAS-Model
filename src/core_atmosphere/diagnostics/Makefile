@@ -11,6 +11,7 @@ DIAGNOSTIC_MODULES = \
 	mpas_pv_diagnostics.o \
 	mpas_soundings.o \
 	mpas_microphysics.o \
+        mpas_vertical_integrals.o \
 
 mpas_isobaric_diagnostics.o: mpas_atm_diagnostics_utils.o
 
@@ -22,7 +23,10 @@ mpas_pv_diagnostics.o: mpas_atm_diagnostics_utils.o
 
 mpas_soundings.o:
 
+mpas_vertical_integrals.o: mpas_atm_diagnostics_utils.o
+
 mpas_microphysics.o: mpas_atm_diagnostics_utils.o
+
 
 ################### Generally no need to modify below here ###################
 
