@@ -1,6 +1,18 @@
 MPAS-v8.3.1
 ====
 
+MPAS version used for MPAS-CONUS404 comparison.
+
+Modifications to the code by Julia Kukulies, include:
+
+1. Allowing for outputting microphysical process rates (e.g. condensation, deposition)
+of the Thompson microphysics scheme
+2. Added diagnostic module to compute ice water path (IWP), liquid water path (LWP) and vertically
+integrated water vapor transport (IVT) 
+
+
+====
+
 The Model for Prediction Across Scales (MPAS) is a collaborative project for
 developing atmosphere, ocean, and other earth-system simulation components for
 use in climate, regional climate, and weather studies. The primary development
