@@ -189,8 +189,6 @@ subroutine mpas_microphysics_compute()
 
   if (.not. arrays_associated) return
 
-  condensation = max(0.0_RKIND, prw_vcd(k, iCell))
-  evaporation = -min(0.0_RKIND, prw_vcd(k, iCell))
   do iCell = 1, nCells
     vert_inst_cr    = 0.0_RKIND
     vert_inst_evap  = 0.0_RKIND
@@ -203,7 +201,8 @@ subroutine mpas_microphysics_compute()
       dp = p_bot - p_top
       layer_mass = dp / gravity
 
-
+      condensation = max(0.0_RKIND, prw_vcd(k, iCell))
+      evaporation = -min(0.0_RKIND, prw_vcd(k, iCell))
       vert_inst_cr = vert_inst_cr + condensation * layer_mass
       vert_inst_evap = vert_inst_evap + evaporation * layer_mass
      
