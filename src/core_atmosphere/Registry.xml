@@ -634,7 +634,6 @@
 			<var name="prv_rev"/>
 			<var name="prr_wau"/>
 			<var name="prr_rcw"/>
-			<var name="prw_imi"/>
 			<var name="prr_gml"/>
 			<var name="prr_rcs"/>
 			<var name="prr_rcg"/>
@@ -2556,8 +2555,7 @@
 
                 <var name="rainprod" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="rain production rate"
-                     packages="mp_thompson_in;mp_thompson_aers_in;mp_wsm6_in"/>
-		
+                     packages="mp_thompson_in;mp_thompson_aers_in;mp_wsm6_in"/>		
                 <var name="prw_vcd" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="condensation rate"
                      packages="mp_thompson_in;mp_thompson_aers_in"/>
@@ -2587,9 +2585,6 @@
                      packages="mp_thompson_in;mp_thompson_aers_in"/>
 		<var name="prr_rcw" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="accretion"
-                     packages="mp_thompson_in;mp_thompson_aers_in"/>
-                <var name="prw_imi" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
-                     description="melting of ice"
                      packages="mp_thompson_in;mp_thompson_aers_in"/>
                 <var name="prr_gml" type="real" dimensions="nVertLevels nCells Time" units="s^{-1}"
                      description="melting of graupel"

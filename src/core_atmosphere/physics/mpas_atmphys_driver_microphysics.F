@@ -343,7 +343,7 @@
  prs_sde, prs_ide, prg_gde, pri_inu,&
  pri_iha, pri_ide,  &
  prv_rev, prr_wau, prr_rcw, &
- prw_imi, prr_gml, prr_rcs, prr_rcg
+ prr_gml, prr_rcs, prr_rcg
  real(kind=RKIND), dimension(:,:), pointer :: &
  prs_sci, prs_ihm, prs_iau, pri_rci, prg_ihm, &
  prr_rci, pri_wfz, pri_rfz, & 
@@ -409,7 +409,6 @@
           call mpas_pool_get_array(diag_physics, 'prv_rev', prv_rev)
           call mpas_pool_get_array(diag_physics, 'prr_wau', prr_wau)
           call mpas_pool_get_array(diag_physics, 'prr_rcw', prr_rcw)
-          call mpas_pool_get_array(diag_physics, 'prw_imi', prw_imi)
           call mpas_pool_get_array(diag_physics, 'prr_gml', prr_gml)
           call mpas_pool_get_array(diag_physics, 'prr_rcs', prr_rcs)
           call mpas_pool_get_array(diag_physics, 'prr_rcg', prr_rcg)
@@ -443,7 +442,7 @@
                   prs_sde = prs_sde, prs_ide = prs_ide, prg_gde = prg_gde , pri_inu = pri_inu ,&
                   pri_iha = pri_iha , pri_ide = pri_ide,  &
                   prv_rev = prv_rev , prr_wau = prr_wau , prr_rcw = prr_rcw, &
-                  prw_imi = prw_imi , prr_gml = prr_gml , prr_rcs = prr_rcs , prr_rcg= prr_rcg, &
+                  prr_gml = prr_gml , prr_rcs = prr_rcs , prr_rcg= prr_rcg, &
                   prs_sci = prs_sci , prs_ihm = prs_ihm , prs_iau = prs_iau , pri_rci = pri_rci, prg_ihm = prg_ihm, &        
                   prr_rci = prr_rci , pri_wfz = pri_wfz , pri_rfz = pri_rfz, &       
                   prg_rfz = prg_rfz, prs_scw = prs_scw, prg_scw = prg_scw, prg_gcw = prg_gcw, prg_rcg = prg_rcg, &    
@@ -468,7 +467,6 @@
           call mpas_pool_get_array(diag_physics, 'prv_rev', prv_rev)
           call mpas_pool_get_array(diag_physics, 'prr_wau', prr_wau)
           call mpas_pool_get_array(diag_physics, 'prr_rcw', prr_rcw)
-          call mpas_pool_get_array(diag_physics, 'prw_imi', prw_imi)
           call mpas_pool_get_array(diag_physics, 'prr_gml', prr_gml)
           call mpas_pool_get_array(diag_physics, 'prw_vcd', prw_vcd)
           call mpas_pool_get_array(diag_physics, 'prs_sci', prs_sci)
@@ -504,7 +502,7 @@
                   prs_sde = prs_sde, prs_ide = prs_ide, prg_gde = prg_gde , pri_inu = pri_inu ,&
                   pri_iha = pri_iha , pri_ide = pri_ide,  &
                   prv_rev = prv_rev , prr_wau = prr_wau , prr_rcw = prr_rcw, &
-                  prw_imi = prw_imi , prr_gml = prr_gml , prr_rcs = prr_rcs , prr_rcg= prr_rcg, &
+                  prr_gml = prr_gml , prr_rcs = prr_rcs , prr_rcg= prr_rcg, &
                   prs_sci = prs_sci , prs_ihm = prs_ihm , prs_iau = prs_iau , pri_rci = pri_rci, prg_ihm = prg_ihm, &        
                   prr_rci = prr_rci , pri_wfz = pri_wfz , pri_rfz = pri_rfz, &       
                   prg_rfz = prg_rfz, prs_scw = prs_scw, prg_scw = prg_scw, prg_gcw = prg_gcw, prg_rcg = prg_rcg, &    
